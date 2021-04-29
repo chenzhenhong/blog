@@ -66,9 +66,9 @@
     <category term="编程" scheme="http://www.sanne.xyz/categories/%E7%BC%96%E7%A8%8B/"/>
     
     
-    <category term="Java" scheme="http://www.sanne.xyz/tags/Java/"/>
-    
     <category term="基础" scheme="http://www.sanne.xyz/tags/%E5%9F%BA%E7%A1%80/"/>
+    
+    <category term="Java" scheme="http://www.sanne.xyz/tags/Java/"/>
     
     <category term="设计模式" scheme="http://www.sanne.xyz/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"/>
     
