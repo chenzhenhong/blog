@@ -19,7 +19,7 @@ tags:
 
 ### 二、Hexo安装步骤
 
-#### 1.安装hex，这里选择全局安装
+#### 1.安装hexo，这里选择全局安装
 ```shell
 npm install -g hexo-cli
 ```
