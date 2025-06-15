@@ -2,9 +2,9 @@
 title: JDK常用新特性
 date: 2024-03-17 20:00:19
 category:
-- learning
+- 学习
 tags: 
-- jdk
+- JDK
 ---
 ```JAVA
 package com.example.demo.feature;

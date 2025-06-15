@@ -2,9 +2,9 @@
 title: Hexo + Github Pages搭建blog
 date: 2024-01-17 22:00:19
 category:
-- experiment
+- 实践
 tags: 
-- Github Pages
+- hexo
 ---
 介绍Hexo + Github Pages（Actions部署）搭建静态blog的过程
 
