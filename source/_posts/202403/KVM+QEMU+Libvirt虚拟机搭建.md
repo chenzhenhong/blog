@@ -120,4 +120,4 @@ echo "  sudo virsh console rocky8-vm1"
 > 当virt-install没有加入--noautoconsole参数时，安装过程会莫名卡住，需要很长时间
 
 - 自动安装界面
-![自动安装界面](../../../images/202403/自动安装界面.png)
+![自动安装界面](/images/202403/自动安装界面.png)
