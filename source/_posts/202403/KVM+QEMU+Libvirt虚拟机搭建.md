@@ -4,7 +4,8 @@ date: 2024-03-27 20:01:16
 category:
 - 实践
 tags: 
-- 虚拟机、kvm
+- 虚拟机
+- kvm
 ---
 想在电脑上运行3个虚拟机，用于搭建kubernetes的学习环境，宿主机系统Arch
  Linux，采用KVM+QEMU+Libvirt。
