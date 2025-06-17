@@ -20,7 +20,7 @@ KVM虚拟化CPU+内存；QEMU用于模拟硬盘、网卡等设备；Libvirt提�
 
 -- ------------------------
 ### 目的
-1.搭建三台安装rocky8的虚拟机
+1.搭建三台安装rocky9的虚拟机
 
 2.每台虚拟机互相之间可以通信
 
@@ -41,21 +41,13 @@ set -Eeu
 set -o pipefail
 
 # 下载 ISO 文件（如果不存在）
-ISO_URL="https://mirrors.aliyun.com/rockylinux/8/isos/x86_64/Rocky-8.10-x86_64-minimal.iso"
-ISO_PATH="/var/lib/libvirt/images/Rocky-8.10-x86_64-minimal.iso"
-MOUNT_DIR="/mnt/rocky8"
+ISO_URL="https://mirror.nju.edu.cn/rocky/9.6/isos/x86_64/Rocky-9.6-x86_64-minimal.iso"
+ISO_PATH="/var/lib/libvirt/images/Rocky-9.6-x86_64-minimal.iso"
 
 if [ ! -f "$ISO_PATH" ]; then
     echo "开始下载镜像文件..."
-    curl -sS --create-dirs -o "${ISO_PATH}" "${ISO_URL}" 
+    curl -L --create-dirs -o "${ISO_PATH}" "${ISO_URL}" 
 fi
-
-MOUNTED=false
-# if ! mountpoint -q "$MOUNT_DIR"; then
-#     sudo mkdir -p "$MOUNT_DIR"
-#     sudo mount -o loop "$ISO_PATH" "$MOUNT_DIR"
-#     MOUNTED=true
-# fi
 
 # IP地址设置 根据网桥的IP范围设置
 VM_IPS=("192.168.122.2" "192.168.122.3" "192.168.122.4")
@@ -65,7 +57,7 @@ DNS="8.8.8.8"
 
 # 同时创建三个虚拟机
 for i in {1..3}; do
-    KS_PATH="/var/lib/libvirt/images/ks-rocky8-vm${i}.cfg"
+    KS_PATH="/var/lib/libvirt/images/ks-rocky9-vm${i}.cfg"
     cat > $KS_PATH <<EOF
 install
 text
@@ -77,7 +69,7 @@ bootloader --location=mbr --append="console=tty0 console=ttyS0,115200n8"
 zerombr
 clearpart --all --initlabel
 autopart --type=lvm
-network --bootproto=static --device=enp1s0 --hostname=rocky8-vm-${i} --ip=${VM_IPS[$((i-1))]} --netmask=${NETMASK} --gateway=${GATEWAY} --nameserver=${DNS}
+network --bootproto=static --device=enp1s0 --hostname=rocky9-vm-${i} --ip=${VM_IPS[$((i-1))]} --netmask=${NETMASK} --gateway=${GATEWAY} --nameserver=${DNS}
 firewall --disabled
 selinux --disabled
 services --disabled="firewalld"
@@ -94,14 +86,14 @@ EOF
     MAC=$(printf '52:54:00:%02x:%02x:%02x\n' $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
     
     sudo virt-install \
-        --name rocky8-vm${i} \
+        --name rocky9-vm${i} \
         --memory 2048 \
         --vcpus 2 --disk size=20,format=qcow2 \
         --network bridge=virbr0,mac=${MAC} \
-        --os-variant rocky8 \
+        --os-variant rocky9 \
         --location "${ISO_PATH}" \
         --initrd-inject ${KS_PATH} \
-        --extra-args "inst.ks=file:/ks-rocky8-vm${i}.cfg console=tty0 console=ttyS0,115200n8" \
+        --extra-args "inst.ks=file:/ks-rocky9-vm${i}.cfg console=tty0 console=ttyS0,115200n8" \
         --graphics none \
         --console pty,target_type=serial \
         --noautoconsole
@@ -114,7 +106,7 @@ fi
 
 echo "Virtual machines are being created in the background..."
 echo "Monitor installation progress with:"
-echo "  sudo virsh console rocky8-vm1"
+echo "  sudo virsh console rocky9-vm1"
 
 ```
 > 当virt-install没有加入--noautoconsole参数时，安装过程会莫名卡住，需要很长时间
