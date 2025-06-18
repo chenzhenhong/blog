@@ -59,7 +59,8 @@ DNS="8.8.8.8"
 for i in {1..3}; do
     KS_PATH="/var/lib/libvirt/images/ks-rocky9-vm${i}.cfg"
     cat > $KS_PATH <<EOF
-install
+# rocky9不需要加install
+# install
 text
 lang en_US.UTF-8
 keyboard us
