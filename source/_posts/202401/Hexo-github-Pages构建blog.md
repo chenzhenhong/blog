@@ -66,6 +66,9 @@ layout: about
 #### 5.运行预览
 ```shell
 hexo server
+
+# 非全局安装使用
+npx hexo server
 ```
 
 #### 6.Github Actions配置
