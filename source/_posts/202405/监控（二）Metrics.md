@@ -377,8 +377,14 @@ new Thread(() -> longTaskTimer.record(() -> {
 ```
 实现类是`DefaultLongTaskTimer`，将类中有一个`NavigableSet<SampleImpl> activeTasks`变量用于存在存活的任务。
 
+### 5.直方图统计
+timer和summary提供了直方图统计，有俩种方式
+- 服务端聚合，意思是Micrometer将数据放入提前预设的桶内，比如统计HTTP请求耗时，预设桶为[0, 100, 200, >500]，如果请求为110ms，则对应桶数量加1。服务端采集时将全部桶数据发送，又服务器自行计算如百分位数。这种模式保留了原始数据样本，服务端可以跨维度组合数据。
 
-### 5.MeterBinder
+- 客户端聚合，由Micrometer计算百分位数，不保留数据的原始样本。
+
+
+### 6.MeterBinder
 `MeterBinder`用于一组关联指标的注册，Micrometer内置了许多指标，如`JvmMemoryMetrics`、`JvmGcMetrics`等等。
 ```java
 JvmGcMetrics jvmGcMetrics = new JvmGcMetrics();
