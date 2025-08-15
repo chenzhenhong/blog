@@ -76,5 +76,45 @@ ExecStartPost=/usr/bin/bash -c 'sleep 5 && sudo iptables -I DOCKER-USER -i wlp3s
 ```
 
 --------------------
-[arch wiki](https://wiki.archlinuxcn.org/wiki/Nftables#%E4%B8%8E_Docker_%E4%B8%80%E8%B5%B7%E5%B7%A5%E4%BD%9C)上提供了一个其他思路，未实践。
+[arch wiki](https://wiki.archlinuxcn.org/wiki/Nftables#%E4%B8%8E_Docker_%E4%B8%80%E8%B5%B7%E5%B7%A5%E4%BD%9C)上提供了一个其他思路。
+
+
+1.为docker服务开启新的命令空间
+新增文件`/etc/systemd/system/docker.service.d/netns.conf`
+```shell
+[Service]
+# 开启新网络命令空间
+# 接下来的ExecStartPre和ExecStart命令都在会这个命令空间下执行
+PrivateNetwork=yes
+# PrivateNetwork=yes会同时将PrivateMounts设置为yes,这里手动恢复
+PrivateMounts=No
+
+# cleanup
+ExecStartPre=-nsenter -t 1 -n -- ip link delete docker0
+
+# add veth
+ExecStartPre=nsenter -t 1 -n -- ip link add docker0 type veth peer name docker0_ns
+ExecStartPre=sh -c 'nsenter -t 1 -n -- ip link set docker0_ns netns "$$BASHPID" && true'
+ExecStartPre=ip link set docker0_ns name eth0
+
+# bring host online
+ExecStartPre=nsenter -t 1 -n -- ip addr add 10.0.0.1/24 dev docker0
+ExecStartPre=nsenter -t 1 -n -- ip link set docker0 up
+
+# bring ns online
+ExecStartPre=ip addr add 10.0.0.100/24 dev eth0
+ExecStartPre=ip link set eth0 up
+ExecStartPre=ip route add default via 10.0.0.1 dev eth0
+```
+
+2.配置防火墙和转发规则
+```shell
+sudo nft add table ip docker_nat
+sudo nft add chain ip docker_nat postrouting '{ type nat hook postrouting priority srcnat; }'
+# masquerade规则，enp197s0f3u4是我的外网网卡
+sudo nft add rule ip docker_nat postrouting ip saddr 10.0.0.0/24 oif "enp197s0f3u4" masquerade
+
+# 为docker0接口开启网络转发
+sudo sysctl -w net.ipv4.conf.docker0.forwarding=1
+```
 
