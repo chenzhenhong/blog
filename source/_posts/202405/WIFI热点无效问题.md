@@ -118,3 +118,33 @@ sudo nft add rule ip docker_nat postrouting ip saddr 10.0.0.0/24 oif "enp197s0f3
 sudo sysctl -w net.ipv4.conf.docker0.forwarding=1
 ```
 
+完整脚本
+```shell
+[Service]
+PrivateNetwork=yes
+PrivateMounts=No
+
+# cleanup
+ExecStartPre=-nsenter -t 1 -n -- ip link delete docker0
+
+# add veth
+ExecStartPre=nsenter -t 1 -n -- ip link add docker0 type veth peer name docker0_ns
+ExecStartPre=sh -c 'nsenter -t 1 -n -- ip link set docker0_ns netns "$$BASHPID" && true'
+ExecStartPre=ip link set docker0_ns name eth0
+
+# bring host online
+ExecStartPre=nsenter -t 1 -n -- ip addr add 10.0.0.1/24 dev docker0
+ExecStartPre=nsenter -t 1 -n -- ip link set docker0 up
+
+# bring ns online
+ExecStartPre=ip addr add 10.0.0.100/24 dev eth0
+ExecStartPre=ip link set eth0 up
+ExecStartPre=ip route add default via 10.0.0.1 dev eth0
+
+ExecStartPre=-nsenter -t 1 -n -- nft delete table docker_nat
+ExecStartPre=nsenter -t 1 -n -- nft add table ip docker_nat
+ExecStartPre=nsenter -t 1 -n -- nft add chain ip docker_nat postrouting '{ type nat hook postrouting priority srcnat; }'
+ExecStartPre=nsenter -t 1 -n -- nft add rule ip docker_nat postrouting ip saddr 10.0.0.0/24 oif "enp197s0f3u4" masquerade
+
+ExecStartPost=nsenter -t 1 -n -- sysctl -w net.ipv4.conf.docker0.forwarding=1
+```
